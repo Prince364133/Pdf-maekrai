@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic PDF Generator by BRDL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            margin: 0;
+            padding: 0;
+            color: #333;
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        h2 {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            font-size: 2.5em;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        form {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 20px; /* Adjusted padding for better mobile view */
+            margin: 30px auto;
+            max-width: 600px;
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        form:hover {
+            transform: translateY(-5px);
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px; /* Adjusted margins for better spacing */
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0 15px;
+            border: 1px solid #BDC3C7;
+            border-radius: 6px;
+            box-sizing: border-box;
+            transition: border 0.3s;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #2ECC71;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2ECC71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        button:before {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            width: 300%;
+            height: 300%;
+            left: -100%;
+            top: -100%;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            z-index: 0;
+        }
+
+        button:hover:before {
+            left: 0;
+            top: 0;
+        }
+
+        button:hover {
+            background-color: #27AE60;
+            transform: scale(1.03);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        @media (max-width: 600px) {
+            form {
+                padding: 15px; /* Adjusted padding for smaller screens */
+            }
+
+            button {
+                font-size: 16px; /* Font size adjustments for buttons */
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #f8f8f8;
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Generate PDF</h2>
+  <h4>Powered by BRDL</h4>
+
+    <form id="pdfForm">
+      <h3>support only English content</h3>
+        <label for="institutionName">Institution Name:</label>
+        <input type="text" id="institutionName" name="institutionName" placeholder="Enter Institution Name" required>
+
+        <label for="examName">Exam Name:</label>
+        <input type="text" id="examName" name="examName" placeholder="Enter Exam Name" required>
+
+        <label for="className">Class:</label>
+        <input type="number" id="className" name="className" placeholder="Enter Class" required>
+
+        <label for="subjectName">Subject:</label>
+        <input type="text" id="subjectName" name="subjectName" placeholder="Enter Subject" required>
+
+        <label for="timeAllowed">Time Allowed:</label>
+        <input type="number" id="timeAllowed" name="timeAllowed" placeholder="Enter Time Allowed" required>
+
+        <label for="maxMarks">Maximum Marks:</label>
+        <input type="number" id="maxMarks" name="maxMarks" placeholder="Enter Maximum Marks" required>
+
+        <label for="minMarks">Minimum Marks:</label>
+        <input type="number" id="minMarks" name="minMarks" placeholder="Enter Minimum Marks" required>
+
+        <label for="generalInstructions">General Instructions:</label>
+        <textarea id="generalInstructions" name="generalInstructions" rows="5" placeholder="Write general instructions here" required></textarea>
+
+        <label for="mathInput">Content Box:</label>
+        <textarea id="mathInput" name="mathInput" rows="5" placeholder="Paste only English words hindi not support"></textarea>
+
+        <button type="button" onclick="generatePDF()">Generate PDF</button>
+    </form>
+
+    <script>
+        function generatePDF() {
+            const removeSpecialCharacters = (text) => {
+                return text.replace(/[#*-]/g, '');  // Remove #, *, -
+            };
+
+            const institutionName = removeSpecialCharacters(document.getElementById('institutionName').value);
+            const examName = removeSpecialCharacters(document.getElementById('examName').value);
+            const className = removeSpecialCharacters(document.getElementById('className').value);
+            const subjectName = removeSpecialCharacters(document.getElementById('subjectName').value);
+            const timeAllowed = removeSpecialCharacters(document.getElementById('timeAllowed').value);
+            const maxMarks = removeSpecialCharacters(document.getElementById('maxMarks').value);
+            const minMarks = removeSpecialCharacters(document.getElementById('minMarks').value);
+            const generalInstructions = removeSpecialCharacters(document.getElementById('generalInstructions').value);
+            const mathInput = removeSpecialCharacters(document.getElementById('mathInput').value);
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            let pageHeight = doc.internal.pageSize.height;
+            let pageWidth = doc.internal.pageSize.width;
+            let margin = 15; // Reduced margin
+            let y = 10;
+
+            // Add header
+            doc.setFontSize(19);
+            doc.setFont('helvetica', 'bold');
+            doc.text(institutionName, pageWidth / 2, y, null, null, 'center');
+            y += 7; // Adjust spacing
+
+            doc.setFontSize(17);
+            doc.text(examName, pageWidth / 2, y, null, null, 'center');
+            y += 10;
+
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+
+            const headerInfo = [
+                `Class: ${className}`,
+                `Subject: ${subjectName}`,
+                `Time [hrs]: ${timeAllowed}`,
+                `Max Marks: ${maxMarks}`,
+                `Min Marks: ${minMarks}`
+            ];
+
+            const totalSpace = pageWidth - 2 * margin;
+            const columnWidth = totalSpace / headerInfo.length;
+
+            headerInfo.forEach((info, index) => {
+                doc.text(info, margin + columnWidth * index, y);
+            });
+
+            y += 8;
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, pageWidth - margin, y);
+            y += 5;
+
+            // Add General Instructions
+            doc.setFontSize(14);
+            doc.setFont('cursive', 'bold');
+            doc.text('General Instructions:', margin, y);
+            y += 10;
+
+            doc.setFontSize(12);
+            doc.setFont('cursive', 'normal');
+
+            let instructionsLines = doc.splitTextToSize(generalInstructions, pageWidth - 2 * margin);
+            instructionsLines.forEach(line => {
+                if (y > pageHeight - margin) {
+                    doc.addPage();
+                    y = margin;
+                }
+                doc.text(line, margin, y);
+                y += 7;
+            });
+
+            // Dynamically draw the line after instructions
+            doc.line(margin, y, pageWidth - margin, y);
+            y += 10;
+
+            // Add Mathematical Content as-is
+            let contentLines = doc.splitTextToSize(mathInput, pageWidth - 2 * margin);
+            contentLines.forEach(line => {
+                if (y > pageHeight - margin) {
+                    doc.addPage();
+                    y = margin;
+                }
+                doc.text(line, margin, y);
+                y += 7;
+            });
+
+            doc.save('generated.pdf');
+        }
+    </script>
+
+    <div class="footer">© 2024 Dynamic PDF Generator by BRDL</div>
+</body>
+
+</html>
