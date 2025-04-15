@@ -2,6 +2,10 @@
 <html lang="en">
 
 <head>
+  <!-- ADD this inside <head> -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Generator</title>
@@ -177,103 +181,110 @@
 
         <button type="button" onclick="generatePDF()">Generate PDF</button>
     </form>
+<!-- ADD this just below your <form> -->
+<div id="previewContainer" style="max-width: 600px; margin: 20px auto; display: none;">
+    <h3 style="color:white; text-align:center;">Preview & Edit</h3>
+    <div contenteditable="true" id="editablePreview" style="background:white; padding:15px; border-radius:10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+        <p>Preview will appear here...</p>
+    </div>
+    <button style="margin-top:10px;" onclick="finalizePDF()">Generate Final PDF</button>
+</div>
 
     <script>
-        function generatePDF() {
-            const removeSpecialCharacters = (text) => {
-                return text.replace(/[#*-]/g, '');  // Remove #, *, -
-            };
+    function generatePDF() {
+        const removeSpecialCharacters = (text) => {
+            return text.replace(/[#*-]/g, '');  // Remove #, *, -
+        };
 
-            const institutionName = removeSpecialCharacters(document.getElementById('institutionName').value);
-            const examName = removeSpecialCharacters(document.getElementById('examName').value);
-            const className = removeSpecialCharacters(document.getElementById('className').value);
-            const subjectName = removeSpecialCharacters(document.getElementById('subjectName').value);
-            const timeAllowed = removeSpecialCharacters(document.getElementById('timeAllowed').value);
-            const maxMarks = removeSpecialCharacters(document.getElementById('maxMarks').value);
-            const minMarks = removeSpecialCharacters(document.getElementById('minMarks').value);
-            const generalInstructions = removeSpecialCharacters(document.getElementById('generalInstructions').value);
-            const mathInput = removeSpecialCharacters(document.getElementById('mathInput').value);
+        const institutionName = removeSpecialCharacters(document.getElementById('institutionName').value);
+        const examName = removeSpecialCharacters(document.getElementById('examName').value);
+        const className = removeSpecialCharacters(document.getElementById('className').value);
+        const subjectName = removeSpecialCharacters(document.getElementById('subjectName').value);
+        const timeAllowed = removeSpecialCharacters(document.getElementById('timeAllowed').value);
+        const maxMarks = removeSpecialCharacters(document.getElementById('maxMarks').value);
+        const minMarks = removeSpecialCharacters(document.getElementById('minMarks').value);
+        const generalInstructions = removeSpecialCharacters(document.getElementById('generalInstructions').value);
+        const mathInput = removeSpecialCharacters(document.getElementById('mathInput').value);
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-            let pageHeight = doc.internal.pageSize.height;
-            let pageWidth = doc.internal.pageSize.width;
-            let margin = 15; // Reduced margin
-            let y = 10;
+        let pageHeight = doc.internal.pageSize.height;
+        let pageWidth = doc.internal.pageSize.width;
+        let margin = 15;
+        let y = 10;
 
-            // Add header
-            doc.setFontSize(19);
-            doc.setFont('helvetica', 'bold');
-            doc.text(institutionName, pageWidth / 2, y, null, null, 'center');
-            y += 7; // Adjust spacing
+        // Header
+        doc.setFontSize(19);
+        doc.setFont('helvetica', 'bold');
+        doc.text(institutionName, pageWidth / 2, y, null, null, 'center');
+        y += 7;
 
-            doc.setFontSize(17);
-            doc.text(examName, pageWidth / 2, y, null, null, 'center');
-            y += 10;
+        doc.setFontSize(17);
+        doc.text(examName, pageWidth / 2, y, null, null, 'center');
+        y += 10;
 
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
 
-            const headerInfo = [
-                `Class: ${className}`,
-                `Subject: ${subjectName}`,
-                `Time [hrs]: ${timeAllowed}`,
-                `Max Marks: ${maxMarks}`,
-                `Min Marks: ${minMarks}`
-            ];
+        const headerInfo = [
+            `Class: ${className}`,
+            `Subject: ${subjectName}`,
+            `Time [hrs]: ${timeAllowed}`,
+            `Max Marks: ${maxMarks}`,
+            `Min Marks: ${minMarks}`
+        ];
 
-            const totalSpace = pageWidth - 2 * margin;
-            const columnWidth = totalSpace / headerInfo.length;
+        const totalSpace = pageWidth - 2 * margin;
+        const columnWidth = totalSpace / headerInfo.length;
 
-            headerInfo.forEach((info, index) => {
-                doc.text(info, margin + columnWidth * index, y);
-            });
+        headerInfo.forEach((info, index) => {
+            doc.text(info, margin + columnWidth * index, y);
+        });
 
-            y += 8;
-            doc.setLineWidth(0.5);
-            doc.line(margin, y, pageWidth - margin, y);
-            y += 5;
+        y += 8;
+        doc.setLineWidth(0.5);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 5;
 
-            // Add General Instructions
-            doc.setFontSize(14);
-            doc.setFont('cursive', 'bold');
-            doc.text('General Instructions:', margin, y);
-            y += 10;
+        // General Instructions
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('General Instructions:', margin, y);
+        y += 10;
 
-            doc.setFontSize(12);
-            doc.setFont('cursive', 'normal');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
 
-            let instructionsLines = doc.splitTextToSize(generalInstructions, pageWidth - 2 * margin);
-            instructionsLines.forEach(line => {
-                if (y > pageHeight - margin) {
-                    doc.addPage();
-                    y = margin;
-                }
-                doc.text(line, margin, y);
-                y += 7;
-            });
+        let instructionsLines = doc.splitTextToSize(generalInstructions, pageWidth - 2 * margin);
+        instructionsLines.forEach(line => {
+            if (y > pageHeight - margin) {
+                doc.addPage();
+                y = margin;
+            }
+            doc.text(line, margin, y);
+            y += 7;
+        });
 
-            // Dynamically draw the line after instructions
-            doc.line(margin, y, pageWidth - margin, y);
-            y += 10;
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 10;
 
-            // Add Mathematical Content as-is
-            let contentLines = doc.splitTextToSize(mathInput, pageWidth - 2 * margin);
-            contentLines.forEach(line => {
-                if (y > pageHeight - margin) {
-                    doc.addPage();
-                    y = margin;
-                }
-                doc.text(line, margin, y);
-                y += 7;
-            });
+        // Main Content
+        let contentLines = doc.splitTextToSize(mathInput, pageWidth - 2 * margin);
+        contentLines.forEach(line => {
+            if (y > pageHeight - margin) {
+                doc.addPage();
+                y = margin;
+            }
+            doc.text(line, margin, y);
+            y += 7;
+        });
 
-            doc.save('generated.pdf');
-        }
-    </script>
+        doc.save('generated.pdf');
+    }
+</script>
 
-    <div class="footer">© 2024 Dynamic PDF Generator by BRDL</div>
+    <div class="footer">©PDF Generator by SNAPSHIKSHA</div>
 </body>
 
 </html>
